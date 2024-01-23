@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<script>
+    function validate(email, formId){
+        if (email.includes("gmail")){
+            alert("Cannot delete this user");
+            return;
+        }
+        document.getElementById(formId).submit();
+    }
+
+    function validateCreate(){
+        message.innerHTML="";
+        let valid=true;
+        Array.from(document.getElementById("createForm").getElementsByTagName("input")).map(
+            item=>{
+                if (item.value==""){
+                    message.innerHTML+=`Please fill out the ${item.name} <br>`;
+                    item.style.backgroundColor="pink";
+                    valid=false;
+                }
+            })
+        if (!document.getElementById("phone").value.slice(0,3) in {"052":"", "054":"", "053":""}){
+            message.innerHTML+="<p>Invalid phone not 052";
+            document.getElementById("phone").style.backgroundColor="pink";
+            valid=false;
+        }
+        if (!document.getElementById("email").value.includes("@")){
+            message.innerHTML+="<p>Invalid email";
+            document.getElementById("email").style.backgroundColor="pink";
+            valid=false
+        }
+
+        if (valid){
+            createForm.submit();
+        }
+    }
+    function unlock(formId){
+        Array.from(document.getElementById(formId).getElementsByTagName("input")).forEach(item=>item.disabled=false);
+    }
+
+</script>
+<body>
+    <h1>אנשי קשר</h1>
+    
+    <div id="message" class="message"></div>
+    
+    <form action="/create" method="POST" id="createForm">
+        <input type="text" name="name" placeholder="Name" id="name">
+        <input type="text" name="phone" placeholder="Phone" id="phone">
+        <input name="email" placeholder="Email" id="email">
+        <input type="text" name="address" placeholder="Address" id="address">
+    </form>
+    <button onclick="validateCreate()">Create Contact</button>
+    
+    <div class="contacts">
+        {% for contact in contacts %}
+        <div class="row">
+            <div class="update">
+                <form action="/update" method="POST" id="updateForm{{contact.id}}">
+                    <input type="hidden" name="id" value='{{ contact.id }}'>
+                    <input type="text" name="name" placeholder="Name"  value="{{contact.name}}" id="name{{contact.id}}" disabled onmouseenter="this.disabled=false" onmouseleave="this.disabled=true">
+                    <input type="text" name="phone" placeholder="Phone" value="{{contact.phone}}" disabled onmouseenter="this.disabled=false" onmouseleave="this.disabled=true">
+                    <input name="email" placeholder="Email"  value="{{contact.email}}" disabled onmouseenter="this.disabled=false" onmouseleave="this.disabled=true">
+                    <input type="text" name="address" placeholder="Address"  value="{{contact.address}}" disabled onmouseenter="this.disabled=false" onmouseleave="this.disabled=true">
+                    <input type="submit" value="Update">
+                </form>
+                <div class="delete">
+                    <form action="/delete" method="GET" id="deleteForm{{contact.id}}">
+                        <input type="hidden" name="id" value='{{ contact.id }}'>
+                    </form>
+                    <button onclick="validate('{{contact.email}}', 'deleteForm{{contact.id}}')">Delete</button>
+                </div>
+    
+            </div>
+        </div>    
+    {% endfor %}
+    </div>
+</body>
+</html>
